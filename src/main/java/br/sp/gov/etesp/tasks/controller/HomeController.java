@@ -8,6 +8,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -16,6 +17,7 @@ import org.springframework.web.servlet.ModelAndView;
 import br.sp.gov.etesp.tasks.model.Tarefa;
 import br.sp.gov.etesp.tasks.repository.TarefaRepository;
 import br.sp.gov.etesp.tasks.utils.StatusTarefa;
+import jakarta.validation.Valid;
 
 @Controller
 public class HomeController {
@@ -25,29 +27,25 @@ public class HomeController {
 	
 	@Autowired
 	TarefaRepository repository; //esta é uma variavel do tipo repository 
+	
 	@GetMapping("/")//porta 8080 , esta porta só entra requisições http (web)
 	public String abrirHome(Model model) {
 		List<Tarefa> tarefas = repository.findAll();
+		model.addAttribute(new Tarefa());
 		model.addAttribute("tarefas",tarefas);
 		return "home";
 	}
 	
 	
 	@PostMapping ("/adicionar")
-public ModelAndView adicionarTarefa(Tarefa tarefa){
-		
-		
-		
-		
+public String adicionarTarefa(@Valid Tarefa tarefa, Model model){	
 		tarefa.setStatus(StatusTarefa.ABERTO.name());
 		Date dataAtualSistema = new Date();		
 		tarefa.setDataInicio(LocalDate.now());
 		repository.save(tarefa);
 		List<Tarefa> tarefas = repository.findAll();
-		ModelAndView view = new ModelAndView("home");
-		view.addObject("tarefas", tarefas);
-		
-		return view; // criar enum sempre que tiver um dado fixo que não vai mudar no projeto
+		model.addAttribute("tarefas", tarefas);		
+		return "home"; // criar enum sempre que tiver um dado fixo que não vai mudar no projeto
 	}
 	
 	@GetMapping("/encerrar/{id}")
